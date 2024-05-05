@@ -91,6 +91,7 @@ func showTasksPreview() {
 	fmt.Println("--------------------")
 
 	var completedTasks, unCompletedTasks = sortTasks()
+	userTasks = append(completedTasks, unCompletedTasks...)
 
 	for index, task := range userTasks {
 		if index >= 3 {
@@ -100,8 +101,8 @@ func showTasksPreview() {
 		fmt.Printf("[%v] %v\n", index, task.label)
 	}
 
-	if len(unCompletedTasks) > 0 {
-		fmt.Printf("You have %v more tasks to complete. ", len(unCompletedTasks))
+	if len(unCompletedTasks) > 3 {
+		fmt.Printf("You have %v more tasks to complete. ", len(unCompletedTasks)-3)
 	}
 
 	if len(completedTasks) > 0 {
@@ -215,8 +216,7 @@ func markAsComplete() {
 		return
 	}
 
-	var completed = make([]Task, 0)
-	var unCompleted = make([]Task, 0)
+	var allTasks = make([]Task, 0)
 
 	for index, userTask := range userTasks {
 		if selectedIndex == index {
@@ -226,17 +226,14 @@ func markAsComplete() {
 			}
 		}
 
-		if userTask.isComplete {
-			completed = append(completed, userTask)
-		} else {
-			unCompleted = append(unCompleted, userTask)
-		}
+		allTasks = append(allTasks, userTask)
+
 	}
 
 	fmt.Printf("Task [%v] marked as completed!\n", selectedIndex)
-	sortTasks()
 
-	userTasks = append(completed, unCompleted...)
+	userTasks = allTasks
+	sortTasks()
 }
 
 func markAsNotComplete() {
@@ -246,8 +243,7 @@ func markAsNotComplete() {
 		return
 	}
 
-	var completed = make([]Task, 0)
-	var unCompleted = make([]Task, 0)
+	var allTasks = make([]Task, 0)
 
 	for index, userTask := range userTasks {
 		if selectedIndex == index {
@@ -257,17 +253,13 @@ func markAsNotComplete() {
 			}
 		}
 
-		if userTask.isComplete {
-			completed = append(completed, userTask)
-		} else {
-			unCompleted = append(unCompleted, userTask)
-		}
+		allTasks = append(allTasks, userTask)
 	}
 
 	fmt.Printf("Task [%v] marked as not completed!\n", selectedIndex)
-	sortTasks()
 
-	userTasks = append(completed, unCompleted...)
+	userTasks = allTasks
+	sortTasks()
 }
 
 func removeTask() {
@@ -277,25 +269,21 @@ func removeTask() {
 		return
 	}
 
-	var completed = make([]Task, 0)
-	var unCompleted = make([]Task, 0)
+	var allTasks = make([]Task, 0)
+	sortTasks()
 
 	for index, userTask := range userTasks {
 		if selectedIndex == index {
 			continue
 		}
 
-		if userTask.isComplete {
-			completed = append(completed, userTask)
-		} else {
-			unCompleted = append(unCompleted, userTask)
-		}
+		allTasks = append(allTasks, userTask)
 	}
 
 	fmt.Printf("Task [%v] removed!\n", selectedIndex)
-	sortTasks()
 
-	userTasks = append(completed, unCompleted...)
+	userTasks = allTasks
+	sortTasks()
 }
 
 func validateCheckerAction(message string) (int, bool) {
@@ -303,7 +291,7 @@ func validateCheckerAction(message string) (int, bool) {
 		return 0, true
 	}
 
-	showTasksPreview()
+	showTasks()
 	fmt.Print(message)
 
 	reader := bufio.NewReader(os.Stdin)
