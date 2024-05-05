@@ -21,6 +21,7 @@ var commands = map[string]func(){
 	"p": showTasksPreview,
 	"m": markAsComplete,
 	"n": markAsNotComplete,
+	"r": removeTask,
 }
 
 var userTasks = make([]Task, 0)
@@ -208,7 +209,7 @@ func sortTasks() ([]Task, []Task) {
 }
 
 func markAsComplete() {
-	selectedIndex, didExit := validateCheckerAction()
+	selectedIndex, didExit := validateCheckerAction("Please Enter the task number you want to mark as complete (Enter [x] to cancel): ")
 
 	if didExit {
 		return
@@ -239,7 +240,7 @@ func markAsComplete() {
 }
 
 func markAsNotComplete() {
-	selectedIndex, didExit := validateCheckerAction()
+	selectedIndex, didExit := validateCheckerAction("Please Enter the task number you want to mark as not complete (Enter [x] to cancel): ")
 
 	if didExit {
 		return
@@ -269,13 +270,41 @@ func markAsNotComplete() {
 	userTasks = append(completed, unCompleted...)
 }
 
-func validateCheckerAction() (int, bool) {
+func removeTask() {
+	selectedIndex, didExit := validateCheckerAction("Please Enter the task number you want to remove (Enter [x] to cancel): ")
+
+	if didExit {
+		return
+	}
+
+	var completed = make([]Task, 0)
+	var unCompleted = make([]Task, 0)
+
+	for index, userTask := range userTasks {
+		if selectedIndex == index {
+			continue
+		}
+
+		if userTask.isComplete {
+			completed = append(completed, userTask)
+		} else {
+			unCompleted = append(unCompleted, userTask)
+		}
+	}
+
+	fmt.Printf("Task [%v] removed!\n", selectedIndex)
+	sortTasks()
+
+	userTasks = append(completed, unCompleted...)
+}
+
+func validateCheckerAction(message string) (int, bool) {
 	if emptyTasks() {
 		return 0, true
 	}
 
 	showTasksPreview()
-	fmt.Print("Please Enter the task number you want to mark as complete (Enter [x] to cancel): ")
+	fmt.Print(message)
 
 	reader := bufio.NewReader(os.Stdin)
 	text, _ := reader.ReadString('\n')
@@ -298,7 +327,7 @@ func validateCheckerAction() (int, bool) {
 			}
 		}
 
-		validateCheckerAction()
+		validateCheckerAction(message)
 	}
 
 	return int(selectedIndex), false
